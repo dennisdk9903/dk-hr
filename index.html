@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>DK門市人事異動回報</title>
+<style>
+:root{--bg:#f6f4f0;--card:#fff;--ink:#1c2540;--muted:#6b7080;--line:#e4e0d8;--accent:#c48c48;--chip:#ece8e0;--err:#b3261e;--ok:#2f7d4f;--warn:#8a5a00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;font-size:15px}
+header{background:var(--ink);color:#fff;padding:18px 16px;display:flex;align-items:center;gap:12px}
+header h1{margin:0;font-size:18px;flex:1}
+header small{color:var(--accent);display:block;font-size:13px;margin-top:2px}
+header button{background:transparent;border:1px solid #4a5478;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:12px 0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}
+.tabs button{border:0;background:var(--chip);color:var(--ink);padding:9px 14px;border-radius:999px;cursor:pointer;font-size:14px}
+.tabs button.on{background:var(--ink);color:#fff}
+h2{font-size:17px;margin:0 0 6px}
+h3{font-size:15px;margin:16px 0 6px;color:var(--muted)}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-family:inherit}
+textarea{min-height:60px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media (max-width:520px){.row,.row3{grid-template-columns:1fr}}
+.btn{display:inline-block;border:0;background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px}
+.btn.sub{background:var(--chip);color:var(--ink);font-weight:500}
+.btn:disabled{opacity:.5}
+.msg{margin-top:10px;font-size:14px;line-height:1.6}
+.msg.err{color:var(--err)} .msg.ok{color:var(--ok)}
+.dep{border:1px dashed var(--line);border-radius:10px;padding:10px;margin-top:8px}
+.ev{border:1px solid var(--line);border-radius:10px;padding:12px;margin:8px 0;background:#fff}
+.ev .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--chip)}
+.tag.t新進{background:#e3f1e8;color:#1e5c38}.tag.t離職{background:#f8e3e1;color:#8c2a22}.tag.t調店{background:#e4ebf7;color:#23427a}
+.tag.t職務異動{background:#efe6f6;color:#5a2d7a}.tag.t更正,.tag.t撤銷{background:#fff1d6;color:var(--warn)}
+.st{margin-left:auto;font-size:13px}.st.done{color:var(--ok)}.st.wait{color:var(--warn)}.st.cancel{color:var(--muted);text-decoration:line-through}
+.meta{color:var(--muted);font-size:13px;margin-top:6px}
+.onboard{background:#fffaf0;border:1px solid #f0d58a;border-radius:10px;padding:12px;margin-top:10px;white-space:pre-line;line-height:1.7;font-size:14px}
+.acts{margin-top:8px;display:flex;gap:8px}
+.acts button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px}
+.hidden{display:none!important}
+.dlg{position:fixed;inset:0;background:rgba(20,24,40,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.dlg .box{background:#fff;border-radius:12px;padding:18px;max-width:420px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.dlg p{margin:0 0 12px;line-height:1.6;white-space:pre-line}
+.dlg .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.note{font-size:13px;color:var(--muted);line-height:1.6}
+.pw{font-size:26px;font-weight:800;letter-spacing:4px;color:var(--accent)}
+.picker .row{margin-bottom:6px}
+.alertbar{background:#fff4d6;border:1px solid #f0d58a;color:#5a4300;border-radius:10px;padding:10px 14px;margin:8px 0;display:flex;gap:10px;align-items:center;cursor:pointer}
+.alertbar b{flex:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 6px}
+.chips button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 12px;border-radius:999px;cursor:pointer;font-size:14px}
+.chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chips button.zero{opacity:.45}
+.grp{font-size:15px;margin:18px 0 4px;padding-bottom:4px;border-bottom:2px solid var(--line)}
+.handle{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+.handle input{font-size:14px;padding:8px 10px}
+.btn.small{margin:0;padding:8px 14px;font-size:14px}
+.btn.okb{background:#2f7d4f}
+.hinfo{font-size:13px;color:#2f7d4f;margin-top:6px}
+.picker select.pPerson{font-weight:600}
+</style>
+</head>
+<body>
+<header><div style="flex:1"><h1 id="hTitle">DK 門市人事異動回報</h1><small id="hSub"></small></div><button id="logout" class="hidden">登出</button></header>
+<div class="wrap">
+
+<!-- 登入 -->
+<div class="card" id="vLogin">
+  <div class="tabs"><button class="on" data-k="store">門市登入</button><button data-k="admin">管理部登入</button></div>
+  <div id="loginStore"><label>門市</label><select id="lStore"></select></div>
+  <label>密碼</label><input id="lPw" type="password" autocomplete="current-password">
+  <button class="btn" id="bLogin">登入</button>
+  <div class="msg" id="mLogin"></div>
+</div>
+
+<!-- 主畫面 -->
+<div id="vMain" class="hidden">
+  <div class="alertbar hidden" id="alertBar"></div>
+  <div class="tabs" id="mainTabs"></div>
+
+  <!-- 待處理（管理部） -->
+  <div class="card hidden" data-pane="待處理">
+    <h2>待處理異動 <span id="pendCount" class="note"></span></h2>
+    <p class="note">所有還沒處理的異動都列在這裡（每分鐘自動更新）。點上方分類只看某一類；處理完按「標記已處理」，會同步記錄到總表的通知台。新人可以直接在這裡填工號建檔。</p>
+    <div class="row"><div><label>處理人（填一次會記住）</label><input id="handler" placeholder="例：王小美"></div>
+      <div><label>區域</label><select id="pRegion"><option value="">全部區域</option></select></div></div>
+    <div class="chips" id="pChips"></div>
+    <div id="pList"></div>
+  </div>
+
+  <!-- 新進 -->
+  <div class="card hidden" data-pane="新進">
+    <h2>新人報到資料</h2>
+    <div id="fStoreWrap"><label>門市</label><select id="fStore"></select></div>
+    <div class="row"><div><label>到職日</label><input id="nDate" type="date"></div><div><label>職稱</label><input id="nTitle" list="titles" placeholder="例：門市保薪"></div></div>
+    <div class="row"><div><label>員工姓名</label><input id="nName"></div><div><label>身分證字號</label><input id="nId" placeholder="A123456789"></div></div>
+    <div class="row"><div><label>出生年月日（西元）</label><input id="nBirth" type="date"></div><div><label>連絡電話</label><input id="nPhone" inputmode="tel"></div></div>
+    <label>地址</label><input id="nAddr">
+    <div class="row"><div><label>保薪金額</label><input id="nSalary" inputmode="numeric"></div><div><label>健保加保眷屬（名）</label><input id="nDeps" type="number" min="0" max="6" value="0"></div></div>
+    <div id="deps"></div>
+    <label>回任人員原員工編號（新人免填）</label><input id="nEid">
+    <label>備註</label><textarea id="nNote"></textarea>
+    <button class="btn" data-submit="新進">送出新人報到</button><div class="msg"></div>
+  </div>
+
+  <!-- 離職 -->
+  <div class="card hidden" data-pane="離職">
+    <h2>離職人員通知</h2>
+    <label>員工</label><div class="picker"><div class="row"><select class="pStore"></select><input class="pSearch" placeholder="輸入員工編號或姓名" autocomplete="off"></div><select class="pPerson" id="qPerson"></select></div>
+    <div class="row"><div><label>最後工作日</label><input id="qDate" type="date"></div><div><label>退保日</label><input id="qIns" type="date"></div></div>
+    <div class="row3"><div><label>制服扣款</label><input id="qU" inputmode="numeric" value="0"></div><div><label>製鞋扣款</label><input id="qS" inputmode="numeric" value="0"></div><div><label>名牌扣款</label><input id="qB" inputmode="numeric" value="0"></div></div>
+    <label>備註</label><textarea id="qNote"></textarea>
+    <p class="note">煩請協助退保作業，謝謝</p>
+    <button class="btn" data-submit="離職">送出離職通知</button><div class="msg"></div>
+  </div>
+
+  <!-- 調店（管理部） -->
+  <div class="card hidden" data-pane="調店">
+    <h2>人員調店</h2>
+    <label>員工</label><div class="picker"><div class="row"><select class="pStore"></select><input class="pSearch" placeholder="輸入員工編號或姓名" autocomplete="off"></div><select class="pPerson" id="tPerson"></select></div>
+    <div class="row"><div><label>調入門市</label><select id="tTo"></select></div><div><label>生效日</label><input id="tDate" type="date"></div></div>
+    <label>新職稱（選填：調店同時升遷或改職務才填）</label><input id="tTitle" list="titles">
+    <label>備註</label><textarea id="tNote"></textarea>
+    <button class="btn" data-submit="調店">送出調店</button><div class="msg"></div>
+  </div>
+
+  <!-- 職務異動（管理部） -->
+  <div class="card hidden" data-pane="職務異動">
+    <h2>職務異動（升店長、升督導、改職稱…）</h2>
+    <label>員工</label><div class="picker"><div class="row"><select class="pStore"></select><input class="pSearch" placeholder="輸入員工編號或姓名" autocomplete="off"></div><select class="pPerson" id="jPerson"></select></div>
+    <div class="row"><div><label>新職稱</label><input id="jTitle" list="titles"></div><div><label>生效日</label><input id="jDate" type="date"></div></div>
+    <label>調入門市（選填：升遷同時換店才選）</label><select id="jTo"></select>
+    <label>備註</label><textarea id="jNote"></textarea>
+    <button class="btn" data-submit="職務異動">送出職務異動</button><div class="msg"></div>
+  </div>
+
+  <!-- 更正／撤銷 -->
+  <div class="card hidden" data-pane="更正撤銷">
+    <h2>更正／撤銷</h2>
+    <p class="note">更正：只填要改的欄位，空白＝不變。撤銷：整筆作廢（例：報到前就不來了）。過程都會留在紀錄裡。</p>
+    <div class="row"><div><label>原事件編號</label><input id="xRef" placeholder="E000012"></div>
+      <div><label>動作</label><select id="xType"><option>更正</option><option>撤銷</option></select></div></div>
+    <div id="xFields">
+      <div class="row"><div><label>日期（到職日／最後工作日／生效日）</label><input id="xDate" type="date"></div><div><label>員工姓名</label><input id="xName"></div></div>
+      <div class="row"><div><label>身分證字號</label><input id="xId"></div><div><label>出生年月日</label><input id="xBirth" type="date"></div></div>
+      <div class="row"><div><label>連絡電話</label><input id="xPhone"></div><div><label>職稱</label><input id="xTitle" list="titles"></div></div>
+      <label>地址</label><input id="xAddr">
+      <div class="row"><div><label>保薪金額</label><input id="xSalary"></div><div><label>退保日</label><input id="xIns" type="date"></div></div>
+      <div class="row3"><div><label>制服扣款</label><input id="xU"></div><div><label>製鞋扣款</label><input id="xS"></div><div><label>名牌扣款</label><input id="xB"></div></div>
+    </div>
+    <label>說明（撤銷必填）</label><textarea id="xNote"></textarea>
+    <button class="btn" data-submit="更正撤銷">送出</button><div class="msg"></div>
+  </div>
+
+  <!-- 看板 -->
+  <div class="card hidden" data-pane="看板">
+    <h2 id="dashTitle">本店看板</h2>
+    <p class="note">每筆回報的處理進度。管理部建好新人工號後，這裡會出現「新人建檔通知」。</p>
+    <div class="row"><div><input id="dFilter" placeholder="搜尋姓名、工號、事件編號"></div>
+      <div><select id="dType"><option value="">全部類型</option><option>新進</option><option>離職</option><option>調店</option><option>職務異動</option><option>更正</option><option>撤銷</option></select></div></div>
+    <div id="dList"></div>
+  </div>
+
+  <!-- 門市密碼（管理部） -->
+  <div class="card hidden" data-pane="門市密碼">
+    <h2>重設門市密碼</h2>
+    <label>門市</label><select id="rStore"></select>
+    <button class="btn" id="bReset">產生新密碼</button>
+    <div class="msg" id="mReset"></div>
+  </div>
+</div>
+</div>
+
+<datalist id="titles"><option>門市保薪</option><option>銷顧保薪</option><option>儲店保薪</option><option>儲幹保薪</option><option>兼職</option>
+<option>門市一級</option><option>門市二級</option><option>門市三級</option><option>銷顧一級</option><option>銷顧二級</option><option>銷顧三級</option>
+<option>儲幹一級</option><option>儲幹二級</option><option>儲幹三級</option><option>儲店</option><option>正店</option><option>店長</option><option>督導</option></datalist>
+
+<div class="dlg hidden" id="dlg"><div class="box"><p id="dlgMsg"></p><input id="dlgIn" class="hidden" autocomplete="off">
+  <div class="btns"><button class="btn small sub" id="dlgNo">取消</button><button class="btn small" id="dlgYes">確定</button></div></div></div>
+<script src="config.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+// 網頁內對話框：不用瀏覽器原生 alert/confirm/prompt（有些瀏覽器、App 內建瀏覽器會擋掉，按了像沒反應）
+function dialog(msg, mode){
+  return new Promise(res => {
+    const d = $("#dlg"), inp = $("#dlgIn"), yes = $("#dlgYes"), no = $("#dlgNo");
+    $("#dlgMsg").textContent = msg;
+    inp.value = ""; inp.classList.toggle("hidden", mode !== "prompt");
+    no.classList.toggle("hidden", mode === "alert");
+    d.classList.remove("hidden");
+    (mode === "prompt" ? inp : yes).focus();
+    const done = v => { d.classList.add("hidden"); yes.onclick = no.onclick = inp.onkeydown = null; res(v); };
+    yes.onclick = () => done(mode === "prompt" ? inp.value.trim() : true);
+    no.onclick = () => done(mode === "prompt" ? "" : false);
+    inp.onkeydown = e => { if (e.key === "Enter") yes.click(); };
+  });
+}
+const uiAlert = m => dialog(m, "alert"), uiConfirm = m => dialog(m, "confirm"), uiPrompt = m => dialog(m, "prompt");
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// 呼叫後台（Apps Script）：網路不穩或 Google 偶發錯誤時自動重試；同一次操作帶同一個 rid，後台不會重複寫入
+let RID_N = 0;
+async function call(fn, ...args){
+  const rid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + (RID_N++);
+  const body = JSON.stringify({fn, args, rid});
+  for (let i = 0; i < 3; i++) {
+    if (i) await new Promise(r => setTimeout(r, 1500 * i));
+    let r;
+    try {
+      const res = await fetch(window.HR_API, {method: "POST", body});
+      r = JSON.parse(await res.text());
+    } catch (e) { continue; }
+    if (r && r.__error) throw new Error(r.__error);
+    return r;
+  }
+  throw new Error("系統忙碌或網路不穩，請稍後再試一次（已送出的資料不會重複）");
+}
+let S = {token: null, role: null, store: null, stores: [], people: []};
+let loginKind = "store";
+const ss = { get(){ try { return sessionStorage.getItem("hrTok"); } catch { return null; } }, set(v){ try { sessionStorage.setItem("hrTok", v); } catch {} }, del(){ try { sessionStorage.removeItem("hrTok"); } catch {} } };
+
+// ── 登入 ──
+$$("#vLogin .tabs button").forEach(b => b.onclick = () => {
+  loginKind = b.dataset.k;
+  $$("#vLogin .tabs button").forEach(x => x.classList.toggle("on", x === b));
+  $("#loginStore").classList.toggle("hidden", loginKind !== "store");
+});
+call("api_stores_public").then(list => {
+  $("#lStore").innerHTML = list.map(s => `<option value="${esc(s.code)}">${esc(s.code)} ${esc(s.name)}</option>`).join("");
+});
+$("#bLogin").onclick = async () => {
+  const m = $("#mLogin"); m.className = "msg"; m.textContent = "登入中…";
+  try {
+    const r = await call("api_login", loginKind, $("#lStore").value, $("#lPw").value);
+    if (!r.ok) { m.className = "msg err"; m.textContent = r.error; return; }
+    ss.set(r.token); m.textContent = ""; $("#lPw").value = ""; await boot(r.token);
+  } catch (e) { m.className = "msg err"; m.textContent = e.message || "登入失敗"; }
+};
+$("#logout").onclick = () => { ss.del(); location.reload(); };
+
+async function boot(token){
+  const b = await call("api_bootstrap", token);
+  S = {token, role: b.role, store: b.store, stores: b.stores, people: b.people, today: b.today};
+  $("#vLogin").classList.add("hidden"); $("#vMain").classList.remove("hidden"); $("#logout").classList.remove("hidden");
+  $("#hSub").textContent = S.role === "admin" ? "管理部" : `${S.store.code} ${S.store.name}`;
+  const tabs = S.role === "admin" ? ["待處理","新進","離職","調店","職務異動","更正撤銷","看板","門市密碼"] : ["新進","離職","看板"];
+  const label = {"待處理":"待處理","新進":"新人報到","離職":"離職通知","調店":"調店","職務異動":"職務異動","更正撤銷":"更正／撤銷","看板": S.role === "admin" ? "全部異動" : "本店看板","門市密碼":"門市密碼"};
+  $("#mainTabs").innerHTML = tabs.map(t => `<button data-t="${t}">${label[t]}</button>`).join("");
+  $$("#mainTabs button").forEach(x => x.onclick = () => show(x.dataset.t));
+  const opts = S.stores.map(s => `<option value="${esc(s.code)}">${esc(s.code)} ${esc(s.name)}</option>`).join("");
+  $("#fStore").innerHTML = opts; $("#tTo").innerHTML = opts; $("#rStore").innerHTML = opts;
+  $("#jTo").innerHTML = `<option value="">（不換店）</option>` + opts;
+  $("#fStoreWrap").classList.toggle("hidden", S.role !== "admin");
+  $("#dashTitle").textContent = label["看板"];
+  fillPeople();
+  if (S.role === "admin") {
+    try { $("#handler").value = localStorage.getItem("hrHandler") || ""; } catch {}
+    const regs = [...new Set(S.stores.map(s => s.region).filter(Boolean))];
+    $("#pRegion").innerHTML = `<option value="">全部區域</option>` + regs.map(r => `<option>${esc(r)}</option>`).join("");
+    setInterval(refresh, 60000);
+  }
+  show(S.role === "admin" ? "待處理" : "看板");
+  refresh();
+}
+// 選人：管理部可先選門市；都可以直接打員工編號、姓名或門市代號搜尋，只剩一人或編號完全相符就自動選好
+function fillPeople(){
+  const active = S.people.filter(p => !["已離職","取消報到"].includes(p.status));
+  const label = p => `${esc(p.eid || p.key)}　${esc(p.name)}　${S.role === "admin" ? esc(p.store) + esc(p.storeName || "") + "　" : ""}${esc(p.title || "")}${p.status !== "在職" ? "・" + esc(p.status) : ""}`;
+  $$(".picker").forEach(pk => {
+    const st = pk.querySelector(".pStore"), q = pk.querySelector(".pSearch"), sel = pk.querySelector(".pPerson");
+    const keepStore = st.value, keepPick = sel.value;
+    if (S.role === "admin") {
+      st.innerHTML = `<option value="">全部門市</option>` + S.stores.map(s => `<option value="${esc(s.code)}">${esc(s.code)} ${esc(s.name)}</option>`).join("");
+      st.value = keepStore;
+    } else st.classList.add("hidden");
+    const draw = () => {
+      const code = st.value, k = q.value.trim().toLowerCase();
+      const list = active.filter(p => (!code || p.store === code) && (!k ||
+        String(p.eid || "").toLowerCase().includes(k) || String(p.key).toLowerCase().includes(k) ||
+        String(p.name || "").toLowerCase().includes(k) || String(p.store) === k));
+      const storeHit = p => String(p.store) === k ? 0 : 1;            // 打的是門市代號 → 該店的人排最前
+      list.sort((a, b) => storeHit(a) - storeHit(b) || String(a.store).localeCompare(String(b.store)) || String(a.eid || a.key).localeCompare(String(b.eid || b.key)));
+      sel.innerHTML = `<option value="">${list.length ? `— 請選擇（${list.length} 人）—` : "— 找不到符合的人 —"}</option>` +
+        list.slice(0, 400).map(p => `<option value="${esc(p.key)}">${label(p)}</option>`).join("");
+      const exact = list.filter(p => String(p.eid || "").toLowerCase() === k || String(p.key).toLowerCase() === k);
+      if (exact.length === 1) sel.value = exact[0].key;
+      else if (list.length === 1) sel.value = list[0].key;
+      else if (list.some(p => p.key === keepPick)) sel.value = keepPick;
+    };
+    st.onchange = draw; q.oninput = draw; draw();
+  });
+}
+function show(t){
+  $$("#mainTabs button").forEach(x => x.classList.toggle("on", x.dataset.t === t));
+  $$("[data-pane]").forEach(p => p.classList.toggle("hidden", p.dataset.pane !== t));
+  if (t === "看板" || t === "待處理") render();
+}
+
+// ── 眷屬欄位 ──
+$("#nDeps").oninput = () => {
+  const n = Math.max(0, Math.min(6, Number($("#nDeps").value) || 0));
+  const cur = $$("#deps .dep").length;
+  for (let i = cur; i < n; i++) $("#deps").insertAdjacentHTML("beforeend", `<div class="dep"><b>眷屬 ${i + 1}</b>
+    <div class="row"><div><label>姓名</label><input class="dN"></div><div><label>關係</label><input class="dR" placeholder="配偶／子女／父母"></div></div>
+    <div class="row"><div><label>身分證字號</label><input class="dI"></div><div><label>出生年月日</label><input class="dB" type="date"></div></div></div>`);
+  $$("#deps .dep").slice(n).forEach(x => x.remove());
+};
+$("#xType").onchange = () => $("#xFields").classList.toggle("hidden", $("#xType").value === "撤銷");
+
+// ── 送出 ──
+const v = id => $(id).value.trim();
+function payload(t){
+  if (t === "新進") return {type: t, store: $("#fStore").value, date: v("#nDate"), title: v("#nTitle"), name: v("#nName"), idno: v("#nId"),
+    birth: v("#nBirth"), phone: v("#nPhone"), address: v("#nAddr"), salary: v("#nSalary"), eid: v("#nEid"), note: v("#nNote"),
+    dependents: $$("#deps .dep").map(d => ({name: d.querySelector(".dN").value.trim(), relation: d.querySelector(".dR").value.trim(),
+      idno: d.querySelector(".dI").value.trim().toUpperCase(), birth: d.querySelector(".dB").value}))};
+  if (t === "離職") return {type: t, key: $("#qPerson").value, date: v("#qDate"), insEnd: v("#qIns"), dUniform: v("#qU"), dShoes: v("#qS"), dBadge: v("#qB"), note: v("#qNote")};
+  if (t === "調店") return {type: t, key: $("#tPerson").value, toStore: $("#tTo").value, title: v("#tTitle"), date: v("#tDate"), note: v("#tNote")};
+  if (t === "職務異動") return {type: t, key: $("#jPerson").value, title: v("#jTitle"), toStore: $("#jTo").value, date: v("#jDate"), note: v("#jNote")};
+  return {type: $("#xType").value, ref: v("#xRef").toUpperCase(), date: v("#xDate"), name: v("#xName"), idno: v("#xId"), birth: v("#xBirth"),
+    phone: v("#xPhone"), title: v("#xTitle"), address: v("#xAddr"), salary: v("#xSalary"), insEnd: v("#xIns"), dUniform: v("#xU"),
+    dShoes: v("#xS"), dBadge: v("#xB"), note: v("#xNote")};
+}
+$$("[data-submit]").forEach(btn => btn.onclick = async () => {
+  const t = btn.dataset.submit, card = btn.closest(".card"), m = card.querySelector(".msg");
+  const p = payload(t);
+  if (!await uiConfirm(`確定送出「${p.type}」？`)) return;
+  btn.disabled = true; m.className = "msg"; m.textContent = "送出中…";
+  try {
+    const r = await call("api_submit", S.token, p);
+    if (!r.ok) { m.className = "msg err"; m.textContent = r.error; return; }
+    m.className = "msg ok"; m.textContent = `已送出，事件編號 ${r.id}。管理部處理後可在看板查看進度。`;
+    card.querySelectorAll("input:not([type=number]):not(#qU):not(#qS):not(#qB),textarea").forEach(i => i.value = "");
+    if (t === "新進") { $("#nDeps").value = 0; $("#deps").innerHTML = ""; }
+    if (t === "職務異動") $("#jTo").value = "";
+    const b = await call("api_bootstrap", S.token); S.people = b.people; fillPeople(); refresh();
+  } catch (e) { m.className = "msg err"; m.textContent = e.message || "送出失敗"; if (/登入/.test(e.message || "")) { ss.del(); setTimeout(() => location.reload(), 1500); } }
+  finally { btn.disabled = false; }
+});
+
+// ── 看板／待處理 ──
+const TYPES = ["新進", "離職", "調店", "職務異動", "更正", "撤銷"];
+let DASH = [], SEEN = null, PCAT = "";
+const isPending = e => !e.done && !e.cancelledBy;
+const regionOf = code => (S.stores.find(s => s.code === String(code)) || {}).region || "";
+async function refresh(){
+  try {
+    const r = await call("api_dashboard", S.token);
+    DASH = r.events;
+    if (S.role === "admin") {
+      const pend = DASH.filter(isPending);
+      const fresh = SEEN ? pend.filter(e => !SEEN.has(e.id)) : [];
+      SEEN = new Set(DASH.map(e => e.id));
+      const tab = $$("#mainTabs button").find(b => b.dataset.t === "待處理");
+      if (tab) tab.textContent = pend.length ? `待處理（${pend.length}）` : "待處理";
+      document.title = (pend.length ? `(${pend.length}) ` : "") + "DK門市人事異動回報";
+      if (fresh.length) {
+        const bar = $("#alertBar");
+        bar.innerHTML = `🔔 <b>有 ${fresh.length} 筆新的異動：${fresh.slice(0, 3).map(e => esc(e.type) + " " + esc(e.name)).join("、")}${fresh.length > 3 ? "…" : ""}</b><span>查看 →</span>`;
+        bar.classList.remove("hidden");
+      }
+    }
+    render();
+  } catch (e) {
+    $("#dList").innerHTML = $("#pList").innerHTML = `<p class="msg err">${esc(e.message)}</p>`;
+    if (/登入/.test(e.message || "")) { ss.del(); setTimeout(() => location.reload(), 1500); }
+  }
+}
+$("#alertBar").onclick = () => { $("#alertBar").classList.add("hidden"); show("待處理"); };
+$("#handler").oninput = () => { try { localStorage.setItem("hrHandler", $("#handler").value.trim()); } catch {} };
+$("#dFilter").oninput = render; $("#dType").onchange = render; $("#pRegion").onchange = render;
+$("#pChips").onclick = ev => { const b = ev.target.closest("[data-pcat]"); if (b) { PCAT = b.dataset.pcat; render(); } };
+
+function evCard(e, mode){
+  const st = e.cancelledBy ? `<span class="st cancel">已撤銷（${esc(e.cancelledBy)}）</span>` : e.done ? `<span class="st done">✔ 已處理</span>` : `<span class="st wait">處理中</span>`;
+  const where = e.type === "調店" ? `${esc(e.from)} → ${esc(e.to)}` : `${esc(e.store)} ${esc(e.storeName || "")}`;
+  const admin = S.role === "admin";
+  const canFix = admin || (e.source === "門市" && !e.done && !e.cancelledBy && ["新進","離職"].includes(e.type));
+  let acts = "";
+  if (admin && isPending(e)) {
+    acts += `<div class="handle"><input class="hrNote" placeholder="人資備註（選填）"><button class="btn small okb" data-done="${esc(e.id)}">✔ 標記已處理</button></div>`;
+    if (e.type === "新進" && !e.eid) acts += `<div class="handle"><input class="eidIn" placeholder="填新人工號（填好門市看板會出現建檔通知）"><button class="btn small" data-assign="${esc(e.id)}">建檔</button></div>`;
+  }
+  if (admin && e.done && mode === "all") acts += `<div class="hinfo">處理：${esc(e.handler || "")} ${esc(e.handledAt || "")}${e.hrNote ? "｜備註：" + esc(e.hrNote) : ""}　<a href="#" data-undone="${esc(e.id)}">取消已處理</a></div>`;
+  if (canFix && !["更正","撤銷"].includes(e.type) && !e.cancelledBy) acts += `<div class="acts"><button data-fix="${esc(e.id)}">更正</button><button data-cancel="${esc(e.id)}">撤銷</button></div>`;
+  return `<div class="ev"><div class="top"><span class="tag t${esc(e.type)}">${esc(e.type)}</span><b>${esc(e.name)}</b>${e.eid ? `<span>工號 ${esc(e.eid)}</span>` : ""}${st}</div>
+    <div class="meta">${esc(e.id)}｜${where}｜${e.type === "離職" ? "最後工作日" : e.type === "新進" ? "到職日" : "生效日"} ${esc(e.date || "")}${e.ref ? "｜原事件 " + esc(e.ref) : ""}｜送出 ${esc(e.time)}（${esc(e.source)}）</div>
+    ${admin && e.summary ? `<div class="meta">${esc(e.summary)}</div>` : ""}
+    ${e.note ? `<div class="meta">說明：${esc(e.note)}</div>` : ""}
+    ${e.onboard ? `<div class="onboard">${esc(e.onboard.join("\n"))}</div>` : ""}${acts}</div>`;
+}
+function render(){
+  const q = $("#dFilter").value.trim().toLowerCase(), ty = $("#dType").value;
+  const all = DASH.filter(e => (!ty || e.type === ty) && (!q || [e.name, e.eid, e.id, e.store].join(" ").toLowerCase().includes(q)));
+  $("#dList").innerHTML = all.length ? all.map(e => evCard(e, "all")).join("") : `<p class="note">目前沒有資料</p>`;
+  if (S.role !== "admin") return;
+  const reg = $("#pRegion").value;
+  const inReg = e => !reg || regionOf(e.store) === reg || (e.type === "調店" && (regionOf(e.from) === reg || regionOf(e.to) === reg));
+  const pend = DASH.filter(e => isPending(e) && inReg(e)).reverse();          // 舊的在上面，先處理
+  const count = t => t ? pend.filter(e => e.type === t).length : pend.length;
+  $("#pendCount").textContent = `${DASH.filter(isPending).length} 筆`;
+  $("#pChips").innerHTML = [""].concat(TYPES).map(t =>
+    `<button data-pcat="${t}" class="${PCAT === t ? "on" : ""} ${t && !count(t) ? "zero" : ""}">${t || "全部"}（${count(t)}）</button>`).join("");
+  if (!pend.length) { $("#pList").innerHTML = `<p class="note">🎉 目前沒有待處理的異動</p>`; return; }
+  if (PCAT) {
+    const list = pend.filter(e => e.type === PCAT);
+    $("#pList").innerHTML = list.length ? list.map(e => evCard(e, "pending")).join("") : `<p class="note">這一類目前沒有待處理</p>`;
+  } else {
+    $("#pList").innerHTML = TYPES.map(t => {
+      const list = pend.filter(e => e.type === t);
+      return list.length ? `<h3 class="grp">${t}（${list.length}）</h3>` + list.map(e => evCard(e, "pending")).join("") : "";
+    }).join("");
+  }
+}
+async function act(fn, ...a){
+  const r = await call(fn, S.token, ...a).catch(e => ({ok: false, error: e.message}));
+  if (!r.ok) uiAlert(r.error);
+  await refresh();
+  return r;
+}
+document.addEventListener("click", async ev => {
+  const d = ev.target.closest("[data-done]"), u = ev.target.closest("[data-undone]"), g = ev.target.closest("[data-assign]");
+  const f = ev.target.closest("[data-fix]"), c = ev.target.closest("[data-cancel]");
+  if (d) {
+    const who = $("#handler").value.trim();
+    if (!who) { await uiAlert("請先在上方填「處理人」"); $("#handler").focus(); return; }
+    d.disabled = true;
+    await act("api_mark_done", d.dataset.done, true, who, d.closest(".ev").querySelector(".hrNote").value);
+  }
+  if (u) {
+    ev.preventDefault();
+    if (await uiConfirm(`取消 ${u.dataset.undone} 的「已處理」？`)) await act("api_mark_done", u.dataset.undone, false, "", "");
+  }
+  if (g) {
+    const eid = g.closest(".handle").querySelector(".eidIn").value.trim();
+    if (!eid) { uiAlert("請先在框裡填工號，再按建檔"); return; }
+    if (!await uiConfirm(`確定替 ${g.dataset.assign} 建檔，工號 ${eid}？`)) return;
+    g.disabled = true;
+    const r = await act("api_assign_id", g.dataset.assign, eid);
+    if (r.ok) uiAlert("已建檔，門市看板會出現新人建檔通知。其他事項處理完後記得「標記已處理」。"); else g.disabled = false;
+  }
+  if (f) {
+    if (S.role === "admin") { show("更正撤銷"); $("#xRef").value = f.dataset.fix; $("#xType").value = "更正"; $("#xFields").classList.remove("hidden"); return; }
+    const field = await uiPrompt("要更正什麼？請直接寫出正確內容（例：到職日改 2026-10-21、電話改 0912xxxxxx），管理部會依說明修正");
+    if (!field) return;
+    const r = await act("api_submit", {type: "更正", ref: f.dataset.fix, note: field, date: ""});
+    if (r.ok) uiAlert(`已送出更正 ${r.id}`);
+  }
+  if (c) {
+    const why = await uiPrompt("撤銷原因（例：報到前就不來了、填錯人）");
+    if (!why) return;
+    const r = await act("api_submit", {type: "撤銷", ref: c.dataset.cancel, note: why});
+    if (r.ok) uiAlert(`已撤銷，事件編號 ${r.id}`);
+  }
+});
+
+// ── 門市密碼 ──
+$("#bReset").onclick = async () => {
+  const code = $("#rStore").value, m = $("#mReset");
+  if (!await uiConfirm(`確定重設 ${code} 的門市密碼？舊密碼會立即失效。`)) return;
+  const r = await call("api_reset_store_password", S.token, code).catch(e => ({ok:false, error:e.message}));
+  m.innerHTML = r.ok ? `新密碼（只顯示這一次，請抄下交給店長）：<div class="pw">${esc(r.password)}</div>` : `<span class="msg err">${esc(r.error)}</span>`;
+};
+
+(async () => { const t = ss.get(); if (t) { try { await boot(t); } catch { ss.del(); } } })();
+</script>
+</body>
+</html>

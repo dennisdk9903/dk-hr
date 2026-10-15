@@ -230,9 +230,16 @@ $$("#vLogin .tabs button").forEach(b => b.onclick = () => {
   $$("#vLogin .tabs button").forEach(x => x.classList.toggle("on", x === b));
   $("#loginStore").classList.toggle("hidden", loginKind !== "store");
 });
-call("api_stores_public").then(list => {
+function fillLoginStores(list){
+  const cur = $("#lStore").value;
   $("#lStore").innerHTML = list.map(s => `<option value="${esc(s.code)}">${esc(s.code)} ${esc(s.name)}</option>`).join("");
-});
+  if (cur) $("#lStore").value = cur;
+}
+try { const c = JSON.parse(localStorage.getItem("hrStores") || "null"); if (Array.isArray(c) && c.length) fillLoginStores(c); } catch {}
+call("api_stores_public").then(list => {
+  fillLoginStores(list);
+  try { localStorage.setItem("hrStores", JSON.stringify(list)); } catch {}
+}).catch(() => {});
 $("#bLogin").onclick = async () => {
   const m = $("#mLogin"); m.className = "msg"; m.textContent = "登入中…";
   try {
@@ -244,7 +251,7 @@ $("#bLogin").onclick = async () => {
 $("#logout").onclick = () => { ss.del(); location.reload(); };
 
 async function boot(token){
-  const b = await call("api_bootstrap", token);
+  const b = await call("api_bootstrap", token, true);
   S = {token, role: b.role, store: b.store, stores: b.stores, people: b.people, today: b.today};
   $("#vLogin").classList.add("hidden"); $("#vMain").classList.remove("hidden"); $("#logout").classList.remove("hidden");
   $("#hSub").textContent = S.role === "admin" ? "管理部" : `${S.store.code} ${S.store.name}`;
@@ -265,7 +272,7 @@ async function boot(token){
     setInterval(refresh, 60000);
   }
   show(S.role === "admin" ? "待處理" : "看板");
-  refresh();
+  applyDash(b.events);
 }
 // 選人：管理部可先選門市；都可以直接打員工編號、姓名或門市代號搜尋，只剩一人或編號完全相符就自動選好
 function fillPeople(){
@@ -338,7 +345,7 @@ $$("[data-submit]").forEach(btn => btn.onclick = async () => {
     card.querySelectorAll("input:not([type=number]):not(#qU):not(#qS):not(#qB),textarea").forEach(i => i.value = "");
     if (t === "新進") { $("#nDeps").value = 0; $("#deps").innerHTML = ""; }
     if (t === "職務異動") $("#jTo").value = "";
-    const b = await call("api_bootstrap", S.token); S.people = b.people; fillPeople(); refresh();
+    call("api_bootstrap", S.token, true).then(b => { S.people = b.people; fillPeople(); applyDash(b.events); }).catch(() => {});
   } catch (e) { m.className = "msg err"; m.textContent = e.message || "送出失敗"; if (/登入/.test(e.message || "")) { ss.del(); setTimeout(() => location.reload(), 1500); } }
   finally { btn.disabled = false; }
 });
@@ -351,7 +358,15 @@ const regionOf = code => (S.stores.find(s => s.code === String(code)) || {}).reg
 async function refresh(){
   try {
     const r = await call("api_dashboard", S.token);
-    DASH = r.events;
+    applyDash(r.events);
+  } catch (e) {
+    $("#dList").innerHTML = $("#pList").innerHTML = `<p class="msg err">${esc(e.message)}</p>`;
+    if (/登入/.test(e.message || "")) { ss.del(); setTimeout(() => location.reload(), 1500); }
+  }
+}
+function applyDash(events){
+  {
+    DASH = events || [];
     if (S.role === "admin") {
       const pend = DASH.filter(isPending);
       const fresh = SEEN ? pend.filter(e => !SEEN.has(e.id)) : [];
@@ -366,9 +381,6 @@ async function refresh(){
       }
     }
     render();
-  } catch (e) {
-    $("#dList").innerHTML = $("#pList").innerHTML = `<p class="msg err">${esc(e.message)}</p>`;
-    if (/登入/.test(e.message || "")) { ss.del(); setTimeout(() => location.reload(), 1500); }
   }
 }
 $("#alertBar").onclick = () => { $("#alertBar").classList.add("hidden"); show("待處理"); };

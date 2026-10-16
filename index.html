@@ -43,6 +43,7 @@ textarea{min-height:60px}
 .acts{margin-top:8px;display:flex;gap:8px}
 .acts button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px}
 .hidden{display:none!important}
+body:not(.admin) .adminHint{display:none}
 .dlg{position:fixed;inset:0;background:rgba(20,24,40,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .dlg .box{background:#fff;border-radius:12px;padding:18px;max-width:420px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.2)}
 .dlg p{margin:0 0 12px;line-height:1.6;white-space:pre-line}
@@ -104,7 +105,7 @@ textarea{min-height:60px}
     <div class="row"><div><label>保薪金額</label><input id="nSalary" inputmode="numeric"></div><div><label>健保加保眷屬（名）</label><input id="nDeps" type="number" min="0" max="6" value="0"></div></div>
     <div id="deps"></div>
     <label>回任人員原員工編號（新人免填）</label><input id="nEid">
-    <label>備註</label><textarea id="nNote"></textarea>
+    <label>備註<span class="adminHint">（管理部送的：門市看不到）</span></label><textarea id="nNote"></textarea>
     <button class="btn" data-submit="新進">送出新人報到</button><div class="msg"></div>
   </div>
 
@@ -114,7 +115,7 @@ textarea{min-height:60px}
     <label>員工</label><div class="picker"><div class="row"><select class="pStore"></select><input class="pSearch" placeholder="輸入員工編號或姓名" autocomplete="off"></div><select class="pPerson" id="qPerson"></select></div>
     <div class="row"><div><label>最後工作日</label><input id="qDate" type="date"></div><div><label>退保日</label><input id="qIns" type="date"></div></div>
     <div class="row3"><div><label>制服扣款</label><input id="qU" inputmode="numeric" value="0"></div><div><label>製鞋扣款</label><input id="qS" inputmode="numeric" value="0"></div><div><label>名牌扣款</label><input id="qB" inputmode="numeric" value="0"></div></div>
-    <label>備註</label><textarea id="qNote"></textarea>
+    <label>備註<span class="adminHint">（管理部送的：門市看不到）</span></label><textarea id="qNote"></textarea>
     <p class="note">煩請協助退保作業，謝謝</p>
     <button class="btn" data-submit="離職">送出離職通知</button><div class="msg"></div>
   </div>
@@ -125,7 +126,7 @@ textarea{min-height:60px}
     <label>員工</label><div class="picker"><div class="row"><select class="pStore"></select><input class="pSearch" placeholder="輸入員工編號或姓名" autocomplete="off"></div><select class="pPerson" id="tPerson"></select></div>
     <div class="row"><div><label>調入門市</label><select id="tTo"></select></div><div><label>生效日</label><input id="tDate" type="date"></div></div>
     <label>新職稱（選填：調店同時升遷或改職務才填）</label><input id="tTitle" list="titles">
-    <label>備註</label><textarea id="tNote"></textarea>
+    <label>說明（只有管理部看得到）</label><textarea id="tNote"></textarea>
     <button class="btn" data-submit="調店">送出調店</button><div class="msg"></div>
   </div>
 
@@ -135,7 +136,7 @@ textarea{min-height:60px}
     <label>員工</label><div class="picker"><div class="row"><select class="pStore"></select><input class="pSearch" placeholder="輸入員工編號或姓名" autocomplete="off"></div><select class="pPerson" id="jPerson"></select></div>
     <div class="row"><div><label>新職稱</label><input id="jTitle" list="titles"></div><div><label>生效日</label><input id="jDate" type="date"></div></div>
     <label>調入門市（選填：升遷同時換店才選）</label><select id="jTo"></select>
-    <label>備註</label><textarea id="jNote"></textarea>
+    <label>說明（只有管理部看得到）</label><textarea id="jNote"></textarea>
     <button class="btn" data-submit="職務異動">送出職務異動</button><div class="msg"></div>
   </div>
 
@@ -160,10 +161,11 @@ textarea{min-height:60px}
   <!-- 看板 -->
   <div class="card hidden" data-pane="看板">
     <h2 id="dashTitle">本店看板</h2>
-    <p class="note">每筆回報的處理進度。管理部建好新人工號後，這裡會出現「新人建檔通知」。</p>
+    <p class="note">每筆回報的處理進度。管理部建好新人工號後，這裡會出現「新人建檔通知」。<br>預設顯示近 3 個月，以及還沒處理、還沒生效的異動。</p>
     <div class="row"><div><input id="dFilter" placeholder="搜尋姓名、工號、事件編號"></div>
       <div><select id="dType"><option value="">全部類型</option><option>新進</option><option>離職</option><option>調店</option><option>職務異動</option><option>更正</option><option>撤銷</option></select></div></div>
     <div id="dList"></div>
+    <div id="dMore" class="hidden" style="text-align:center;margin-top:12px"><button class="btn sub small" id="bMore">顯示 3 個月以前的紀錄</button></div>
   </div>
 
   <!-- 門市密碼（管理部） -->
@@ -254,6 +256,7 @@ async function boot(token){
   const b = await call("api_bootstrap", token, true);
   S = {token, role: b.role, store: b.store, stores: b.stores, people: b.people, today: b.today};
   $("#vLogin").classList.add("hidden"); $("#vMain").classList.remove("hidden"); $("#logout").classList.remove("hidden");
+  document.body.classList.toggle("admin", S.role === "admin");
   $("#hSub").textContent = S.role === "admin" ? "管理部" : `${S.store.code} ${S.store.name}`;
   const tabs = S.role === "admin" ? ["待處理","新進","離職","調店","職務異動","更正撤銷","看板","門市密碼"] : ["新進","離職","看板"];
   const label = {"待處理":"待處理","新進":"新人報到","離職":"離職通知","調店":"調店","職務異動":"職務異動","更正撤銷":"更正／撤銷","看板": S.role === "admin" ? "全部異動" : "本店看板","門市密碼":"門市密碼"};
@@ -272,7 +275,7 @@ async function boot(token){
     setInterval(refresh, 60000);
   }
   show(S.role === "admin" ? "待處理" : "看板");
-  applyDash(b.events);
+  applyDash(b.events, b.hasMore);
 }
 // 選人：管理部可先選門市；都可以直接打員工編號、姓名或門市代號搜尋，只剩一人或編號完全相符就自動選好
 function fillPeople(){
@@ -345,28 +348,28 @@ $$("[data-submit]").forEach(btn => btn.onclick = async () => {
     card.querySelectorAll("input:not([type=number]):not(#qU):not(#qS):not(#qB),textarea").forEach(i => i.value = "");
     if (t === "新進") { $("#nDeps").value = 0; $("#deps").innerHTML = ""; }
     if (t === "職務異動") $("#jTo").value = "";
-    call("api_bootstrap", S.token, true).then(b => { S.people = b.people; fillPeople(); applyDash(b.events); }).catch(() => {});
+    call("api_bootstrap", S.token, !SHOW_ALL).then(b => { S.people = b.people; fillPeople(); if (b.events) applyDash(b.events, b.hasMore); else refresh(); }).catch(() => {});
   } catch (e) { m.className = "msg err"; m.textContent = e.message || "送出失敗"; if (/登入/.test(e.message || "")) { ss.del(); setTimeout(() => location.reload(), 1500); } }
   finally { btn.disabled = false; }
 });
 
 // ── 看板／待處理 ──
 const TYPES = ["新進", "離職", "調店", "職務異動", "更正", "撤銷"];
-let DASH = [], SEEN = null, PCAT = "";
+let DASH = [], SEEN = null, PCAT = "", SHOW_ALL = false, HAS_MORE = false;
 const isPending = e => !e.done && !e.cancelledBy;
 const regionOf = code => (S.stores.find(s => s.code === String(code)) || {}).region || "";
 async function refresh(){
   try {
-    const r = await call("api_dashboard", S.token);
-    applyDash(r.events);
+    const r = await call("api_dashboard", S.token, {all: SHOW_ALL});
+    applyDash(r.events, r.hasMore);
   } catch (e) {
     $("#dList").innerHTML = $("#pList").innerHTML = `<p class="msg err">${esc(e.message)}</p>`;
     if (/登入/.test(e.message || "")) { ss.del(); setTimeout(() => location.reload(), 1500); }
   }
 }
-function applyDash(events){
+function applyDash(events, hasMore){
   {
-    DASH = events || [];
+    DASH = events || []; HAS_MORE = !!hasMore;
     if (S.role === "admin") {
       const pend = DASH.filter(isPending);
       const fresh = SEEN ? pend.filter(e => !SEEN.has(e.id)) : [];
@@ -385,6 +388,7 @@ function applyDash(events){
 }
 $("#alertBar").onclick = () => { $("#alertBar").classList.add("hidden"); show("待處理"); };
 $("#handler").oninput = () => { try { localStorage.setItem("hrHandler", $("#handler").value.trim()); } catch {} };
+$("#bMore").onclick = async () => { SHOW_ALL = true; $("#bMore").disabled = true; $("#bMore").textContent = "載入中…"; await refresh(); };
 $("#dFilter").oninput = render; $("#dType").onchange = render; $("#pRegion").onchange = render;
 $("#pChips").onclick = ev => { const b = ev.target.closest("[data-pcat]"); if (b) { PCAT = b.dataset.pcat; render(); } };
 
@@ -410,6 +414,7 @@ function render(){
   const q = $("#dFilter").value.trim().toLowerCase(), ty = $("#dType").value;
   const all = DASH.filter(e => (!ty || e.type === ty) && (!q || [e.name, e.eid, e.id, e.store].join(" ").toLowerCase().includes(q)));
   $("#dList").innerHTML = all.length ? all.map(e => evCard(e, "all")).join("") : `<p class="note">目前沒有資料</p>`;
+  $("#dMore").classList.toggle("hidden", !HAS_MORE || SHOW_ALL);
   if (S.role !== "admin") return;
   const reg = $("#pRegion").value;
   const inReg = e => !reg || regionOf(e.store) === reg || (e.type === "調店" && (regionOf(e.from) === reg || regionOf(e.to) === reg));
